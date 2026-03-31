@@ -552,8 +552,8 @@ function doGet(e) {
     </div>
 
     <div class="input-group">
-      <label class="input-label">Gemini API Key (pentru citire imagini)</label>
-      <input type="password" id="apiKey" placeholder="AIza..." />
+      <label class="input-label">OpenRouter API Key (pentru citire imagini)</label>
+      <input type="password" id="apiKey" placeholder="sk-or-..." />
       <div style="font-size:11px;color:var(--muted);margin-top:4px;">Cheia ta nu este salvată nicăieri — rămâne doar în browser.</div>
     </div>
 
@@ -734,24 +734,29 @@ Analizează imaginea și extrage DOAR aceste câmpuri în format JSON:
 Dacă nu poți extrage un câmp, pune null. Răspunde DOAR cu JSON, nimic altceva.`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.apiKey}`, {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.apiKey}`
+      },
       body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: 'image/jpeg', data: currentImageB64 } },
-            { text: prompt }
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${currentImageB64}` } },
+            { type: 'text', text: prompt }
           ]
         }]
       })
     });
 
     const data = await res.json();
-    console.log('Gemini response:', JSON.stringify(data));
-    if (data.error) throw new Error('Gemini: ' + data.error.message);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    if (!text) throw new Error('Gemini nu a returnat text. Incearca din nou.');
+    console.log('OpenRouter response:', JSON.stringify(data));
+    if (data.error) throw new Error('OpenRouter: ' + data.error.message);
+    const text = data.choices?.[0]?.message?.content || '';
+    if (!text) throw new Error('Nu a returnat text. Incearca din nou.');
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('Nu s-a gasit JSON in raspuns: ' + text);
     const parsed = JSON.parse(jsonMatch[0]);
