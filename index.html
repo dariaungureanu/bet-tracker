@@ -748,9 +748,13 @@ Dacă nu poți extrage un câmp, pune null. Răspunde DOAR cu JSON, nimic altcev
     });
 
     const data = await res.json();
+    console.log('Gemini response:', JSON.stringify(data));
+    if (data.error) throw new Error('Gemini: ' + data.error.message);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const clean = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    if (!text) throw new Error('Gemini nu a returnat text. Incearca din nou.');
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Nu s-a gasit JSON in raspuns: ' + text);
+    const parsed = JSON.parse(jsonMatch[0]);
 
     if (parsed.MECI) document.getElementById('f_meci').value = parsed.MECI;
     if (parsed.PARIU) document.getElementById('f_pariu').value = parsed.PARIU;
