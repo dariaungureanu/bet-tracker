@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bet Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --card: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #f0b429;
+    --accent2: #e05c2a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #60a5fa;
+    --text: #f0f0f8;
+    --muted: #888899;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 0%, #1a1200 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, #1a0a00 0%, transparent 60%);
+  }
+
+  /* HEADER */
+  .header {
+    padding: 24px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sheet-status {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  .dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    padding: 16px 20px 0;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 18px;
+    border-radius: 8px 8px 0 0;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* SECTIONS */
+  .section { display: none; padding: 20px; }
+  .section.active { display: block; }
+
+  /* SETUP SECTION */
+  .setup-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .setup-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .setup-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-content { flex: 1; }
+  .step-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-detail { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: var(--blue);
+    font-family: monospace;
+    word-break: break-all;
+  }
+
+  .input-group { margin-bottom: 14px; }
+  .input-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: var(--surface); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-family: var(--font-body);
+    font-size: 14px;
+    letter-spacing: 0;
+    font-weight: 500;
+  }
+
+  /* ADD BET SECTION */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(240,180,41,0.04); }
+
+  .upload-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+  }
+
+  .upload-icon { font-size: 40px; margin-bottom: 8px; }
+  .upload-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--muted); }
+
+  .preview-img {
+    width: 100%;
+    border-radius: 12px;
+    max-height: 200px;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .ai-btn {
+    margin-bottom: 16px;
+  }
+
+  .ai-status {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 12px;
+    display: none;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-grid .full { grid-column: 1/-1; }
+
+  .rezultat-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .rez-btn {
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-display);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .rez-btn.selected-W { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.1); }
+  .rez-btn.selected-L { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.1); }
+  .rez-btn.selected-V { border-color: var(--blue); color: var(--blue); background: rgba(96,165,250,0.1); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  /* HISTORY */
+  .bet-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .bet-card:hover { border-color: #3a3a4a; }
+
+  .bet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .bet-meci { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .bet-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .badge-W { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-L { background: rgba(239,68,68,0.15); color: var(--red); }
+  .badge-V { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge-pending { background: rgba(240,180,41,0.15); color: var(--accent); }
+
+  .bet-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .detail-item { text-align: center; }
+  .detail-val { font-size: 16px; font-weight: 600; }
+  .detail-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .bet-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .warning-box {
+    background: rgba(240,180,41,0.08);
+    border: 1px solid rgba(240,180,41,0.25);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">BET TRACKER</div>
+  <div class="sheet-status">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">Neconectat</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="showTab('setup')">⚙️ Setup</button>
+  <button class="tab active" onclick="showTab('add')">➕ Adaugă</button>
+  <button class="tab" onclick="showTab('history')">📋 Istoric</button>
+</div>
+
+<!-- SETUP TAB -->
+<div class="section" id="tab-setup">
+  <div class="setup-card">
+    <div class="setup-title">CONFIGURARE GOOGLE SHEETS</div>
+    <div class="setup-desc">Urmează pașii de mai jos o singură dată. Apoi aplicația va scrie automat în foaia ta Google.</div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-label">Creează un Google Apps Script</div>
+        <div class="step-detail">
+          Deschide Google Sheet-ul tău → click <strong>Extensions → Apps Script</strong> → șterge tot ce e acolo și lipește codul de mai jos:
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;position:relative;">
+      <pre id="scriptCode" style="font-size:11px;color:var(--blue);font-family:monospace;white-space:pre-wrap;line-height:1.6;overflow-x:auto;">const SHEET_NAME = 'PARIURI';
+
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  const lastRow = sheet.getLastRow();
+
+  // Calculate CASTIG and PROFIT
+  const suma = parseFloat(data.SUMA) || 0;
+  const cota = parseFloat(data.COTA) || 0;
+  const rez = data.REZULTAT;
+  let castig = 0;
+  if (rez === 'W') castig = Math.round((suma * cota - suma) * 100) / 100;
+  else if (rez === 'L') castig = -suma;
+  else if (rez === 'V') castig = 0;
+
+  // Get running profit
+  let prevProfit = 0;
+  if (lastRow > 1) {
+    prevProfit = parseFloat(sheet.getRange(lastRow, 10).getValue()) || 0;
+  }
+  const profit = Math.round((prevProfit + castig) * 100) / 100;
+  const profitPct = Math.round((profit / 200) * 100) / 100; // adjust 200 = initial capital
+
+  sheet.appendRow([
+    data.DATA, data.MECI, data.PARIU, cota, suma,
+    data.ABONAMENT, data.PLATFORMA, rez, castig, profit, profitPct
+  ]);
+
+  return ContentService.createTextOutput(JSON.stringify({ok: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const rows = data.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = r[i]);
+    return obj;
+  }).reverse().slice(0, 30);
+  return ContentService.createTextOutput(JSON.stringify(rows))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+      <button onclick="copyScript()" style="position:absolute;top:10px;right:10px;background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">COPIAZĂ</button>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-label">Publică scriptul</div>
+        <div class="step-detail">
+          Click <strong>Deploy → New deployment</strong> → Type: <strong>Web app</strong> → Execute as: <strong>Me</strong> → Who has access: <strong>Anyone</strong> → Deploy → Copiază URL-ul generat
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-label">Lipește URL-ul și cheia API Claude</div>
+        <div class="step-detail">Introdu URL-ul de la Apps Script și cheia ta API Anthropic mai jos:</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Apps Script URL</label>
+      <input type="url" id="sheetUrl" placeholder="https://script.google.com/macros/s/..." />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Gemini API Key (pentru citire imagini)</label>
+      <input type="password" id="apiKey" placeholder="AIza..." />
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Cheia ta nu este salvată nicăieri — rămâne doar în browser.</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveConfig()">SALVEAZĂ CONFIGURAREA</button>
+  </div>
+
+  <div class="warning-box">
+    ⚠️ Această aplicație funcționează direct cu Google Sheet-ul lui prin Apps Script — fără login Google, fără a conecta conturi. Doar URL-ul și cheia API sunt necesare.
+  </div>
+</div>
+
+<!-- ADD BET TAB -->
+<div class="section active" id="tab-add">
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+    <div class="upload-icon">📸</div>
+    <div class="upload-title">Fotografiază biletul</div>
+    <div class="upload-sub">Sau apasă pentru a alege din galerie</div>
+  </div>
+
+  <img id="previewImg" class="preview-img" />
+
+  <button class="btn btn-secondary ai-btn" id="aiBtn" onclick="readWithAI()" style="display:none;">
+    ✨ Citește cu AI
+  </button>
+
+  <div class="ai-status" id="aiStatus">🤖 AI citește imaginea...</div>
+
+  <div class="divider">sau completează manual</div>
+
+  <div class="form-grid">
+    <div class="input-group full">
+      <label class="input-label">Data</label>
+      <input type="date" id="f_data" />
+    </div>
+
+    <div class="input-group full">
+      <label class="input-label">Meci</label>
+      <input type="text" id="f_meci" placeholder="Ex: Barcelona vs Arsenal" />
+    </div>
+
+    <div class="input-group full">
+      <label class="input-label">Pariu</label>
+      <input type="text" id="f_pariu" placeholder="Ex: 1, Sub 2.5, GG..." />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Cotă</label>
+      <input type="number" id="f_cota" placeholder="1.85" step="0.01" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Sumă (RON)</label>
+      <input type="number" id="f_suma" placeholder="50" step="0.5" />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Abonament</label>
+      <input type="text" id="f_abonament" placeholder="Ex: Premium, Vip, Brutal..." />
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Platformă</label>
+      <input type="text" id="f_platforma" placeholder="Ex: MrBit, Toto, Don..." />
+    </div>
+
+    <div class="input-group full">
+      <label class="input-label">Rezultat</label>
+      <div class="rezultat-btns">
+        <button class="rez-btn" id="rez-W" onclick="selectRez('W')">✅ W</button>
+        <button class="rez-btn" id="rez-L" onclick="selectRez('L')">❌ L</button>
+        <button class="rez-btn" id="rez-V" onclick="selectRez('V')">🔄 V</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="submitBtn" onclick="submitBet()">
+    ADAUGĂ ÎN SHEET
+  </button>
+</div>
+
+<!-- HISTORY TAB -->
+<div class="section" id="tab-history">
+  <div id="historyList">
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title">Niciun pariu încă</div>
+      <div>Adaugă primul pariu sau conectează-te la Sheet</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let selectedRez = '';
+let currentImageB64 = '';
+let config = {};
+
+// Load saved config
+window.onload = () => {
+  config = JSON.parse(localStorage.getItem('betConfig') || '{}');
+  if (config.sheetUrl) document.getElementById('sheetUrl').value = config.sheetUrl;
+  if (config.apiKey) document.getElementById('apiKey').value = config.apiKey;
+  updateStatus();
+  // Set today's date
+  document.getElementById('f_data').value = new Date().toISOString().split('T')[0];
+};
+
+function updateStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (config.sheetUrl) {
+    dot.classList.add('connected');
+    txt.textContent = 'Conectat';
+  } else {
+    dot.classList.remove('connected');
+    txt.textContent = 'Neconectat';
+  }
+}
+
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'history') loadHistory();
+}
+
+function saveConfig() {
+  config.sheetUrl = document.getElementById('sheetUrl').value.trim();
+  config.apiKey = document.getElementById('apiKey').value.trim();
+  if (!config.sheetUrl) { showToast('Introdu URL-ul Apps Script!', 'error'); return; }
+  localStorage.setItem('betConfig', JSON.stringify(config));
+  updateStatus();
+  showToast('✅ Configurare salvată!', 'success');
+}
+
+function selectRez(r) {
+  selectedRez = r;
+  ['W','L','V'].forEach(x => {
+    document.getElementById('rez-'+x).className = 'rez-btn' + (x === r ? ' selected-'+x : '');
+  });
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    document.getElementById('previewImg').src = dataUrl;
+    document.getElementById('previewImg').style.display = 'block';
+    currentImageB64 = dataUrl.split(',')[1];
+    document.getElementById('aiBtn').style.display = 'flex';
+    document.getElementById('uploadZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function readWithAI() {
+  if (!config.apiKey) { showToast('Adaugă cheia API în Setup!', 'error'); return; }
+  if (!currentImageB64) { showToast('Selectează o imagine mai întâi!', 'error'); return; }
+
+  document.getElementById('aiStatus').style.display = 'block';
+  document.getElementById('aiBtn').disabled = true;
+
+  const prompt = `Ești un asistent care extrage date din bilete de pariuri sportive românești. 
+Analizează imaginea și extrage DOAR aceste câmpuri în format JSON:
+{
+  "MECI": "numele echipelor (ex: Barcelona vs Arsenal)",
+  "PARIU": "tipul pariului (ex: 1, 2, GG, Sub 2.5, Handicap Asiatic H2 0.75, etc)",
+  "COTA": număr zecimal,
+  "SUMA": număr (Miza în RON),
+  "DATA": "data în format YYYY-MM-DD"
+}
+Dacă nu poți extrage un câmp, pune null. Răspunde DOAR cu JSON, nimic altceva.`;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${config.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: 'image/jpeg', data: currentImageB64 } },
+            { text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    if (parsed.MECI) document.getElementById('f_meci').value = parsed.MECI;
+    if (parsed.PARIU) document.getElementById('f_pariu').value = parsed.PARIU;
+    if (parsed.COTA) document.getElementById('f_cota').value = parsed.COTA;
+    if (parsed.SUMA) document.getElementById('f_suma').value = parsed.SUMA;
+    if (parsed.DATA) document.getElementById('f_data').value = parsed.DATA;
+
+    showToast('✨ Câmpuri completate automat!', 'success');
+  } catch(err) {
+    showToast('Eroare la citirea imaginii: ' + err.message, 'error');
+  }
+
+  document.getElementById('aiStatus').style.display = 'none';
+  document.getElementById('aiBtn').disabled = false;
+}
+
+async function submitBet() {
+  if (!config.sheetUrl) { showToast('Configurează Sheet-ul mai întâi!', 'error'); return; }
+
+  const data = {
+    DATA: document.getElementById('f_data').value,
+    MECI: document.getElementById('f_meci').value,
+    PARIU: document.getElementById('f_pariu').value,
+    COTA: document.getElementById('f_cota').value,
+    SUMA: document.getElementById('f_suma').value,
+    ABONAMENT: document.getElementById('f_abonament').value,
+    PLATFORMA: document.getElementById('f_platforma').value,
+    REZULTAT: selectedRez
+  };
+
+  if (!data.MECI || !data.COTA || !data.SUMA) {
+    showToast('Completează toate câmpurile obligatorii!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Se trimite...';
+
+  try {
+    await fetch(config.sheetUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    showToast('✅ Pariu adăugat în Sheet!', 'success');
+    resetForm();
+  } catch(err) {
+    showToast('Eroare: ' + err.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'ADAUGĂ ÎN SHEET';
+}
+
+function resetForm() {
+  document.getElementById('f_meci').value = '';
+  document.getElementById('f_pariu').value = '';
+  document.getElementById('f_cota').value = '';
+  document.getElementById('f_suma').value = '';
+  document.getElementById('f_abonament').value = '';
+  document.getElementById('f_platforma').value = '';
+  document.getElementById('f_data').value = new Date().toISOString().split('T')[0];
+  selectedRez = '';
+  ['W','L','V'].forEach(x => document.getElementById('rez-'+x).className = 'rez-btn');
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('aiBtn').style.display = 'none';
+  currentImageB64 = '';
+}
+
+async function loadHistory() {
+  const list = document.getElementById('historyList');
+  if (!config.sheetUrl) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚙️</div><div class="empty-title">Configurează mai întâi</div><div>Mergi la tab-ul Setup</div></div>';
+    return;
+  }
+
+  list.innerHTML = '<div class="empty-state"><div>📊 Se încarcă...</div></div>';
+
+  try {
+    const res = await fetch(config.sheetUrl);
+    const rows = await res.json();
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Niciun pariu încă</div></div>';
+      return;
+    }
+
+    list.innerHTML = rows.map(r => {
+      const rez = r.REZULTAT || 'pending';
+      const castig = parseFloat(r.CASTIG) || 0;
+      const badgeClass = rez === 'W' ? 'badge-W' : rez === 'L' ? 'badge-L' : rez === 'V' ? 'badge-V' : 'badge-pending';
+      const badgeText = rez === 'W' ? '✅ WIN' : rez === 'L' ? '❌ LOST' : rez === 'V' ? '🔄 VOID' : '⏳ OPEN';
+      const dateStr = r.DATA ? new Date(r.DATA).toLocaleDateString('ro-RO') : '';
+      const castigColor = castig > 0 ? 'var(--green)' : castig < 0 ? 'var(--red)' : 'var(--text)';
+
+      return `<div class="bet-card">
+        <div class="bet-header">
+          <div>
+            <div class="bet-meci">${r.MECI || '-'}</div>
+            <div class="bet-date">${dateStr} · ${r.PARIU || ''}</div>
+          </div>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="bet-details">
+          <div class="detail-item">
+            <div class="detail-val">${r.COTA || '-'}</div>
+            <div class="detail-label">Cotă</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-val">${r.SUMA || '-'} RON</div>
+            <div class="detail-label">Miză</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-val" style="color:${castigColor}">${castig > 0 ? '+' : ''}${castig} RON</div>
+            <div class="detail-label">Câștig</div>
+          </div>
+        </div>
+        <div class="bet-tags">
+          ${r.PLATFORMA ? `<span class="tag">🎯 ${r.PLATFORMA}</span>` : ''}
+          ${r.ABONAMENT ? `<span class="tag">📦 ${r.ABONAMENT}</span>` : ''}
+          ${r.PROFIT !== undefined ? `<span class="tag" style="color:${parseFloat(r.PROFIT)>=0?'var(--green)':'var(--red)'}">Profit total: ${r.PROFIT} RON</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(err) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><div class="empty-title">Eroare la încărcare</div><div>' + err.message + '</div></div>';
+  }
+}
+
+function copyScript() {
+  navigator.clipboard.writeText(document.getElementById('scriptCode').textContent);
+  showToast('✅ Cod copiat!', 'success');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
